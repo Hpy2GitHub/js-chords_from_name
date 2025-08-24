@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Chord Fingering Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chord-input {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .clear-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .clear-btn:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .output {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 25px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre;
+            overflow-x: auto;
+            margin-top: 25px;
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+        }
+
+        .output:empty {
+            display: none;
+        }
+
+        .help-text {
+            background: #e8f4fd;
+            color: #0369a1;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .note-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .note-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .note-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .advanced-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .advanced-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎸 Guitar Chord Generator</h1>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label for="chordInput">Enter chord notes (e.g., C E G, F# A# C#):</label>
+                <input type="text" id="chordInput" class="chord-input" placeholder="C E G" autocomplete="off">
+                
+                <div class="note-buttons">
+                    <button type="button" class="note-btn" onclick="addNote('C')">C</button>
+                    <button type="button" class="note-btn" onclick="addNote('C#')">C#</button>
+                    <button type="button" class="note-btn" onclick="addNote('D')">D</button>
+                    <button type="button" class="note-btn" onclick="addNote('D#')">D#</button>
+                    <button type="button" class="note-btn" onclick="addNote('E')">E</button>
+                    <button type="button" class="note-btn" onclick="addNote('F')">F</button>
+                    <button type="button" class="note-btn" onclick="addNote('F#')">F#</button>
+                    <button type="button" class="note-btn" onclick="addNote('G')">G</button>
+                    <button type="button" class="note-btn" onclick="addNote('G#')">G#</button>
+                    <button type="button" class="note-btn" onclick="addNote('A')">A</button>
+                    <button type="button" class="note-btn" onclick="addNote('A#')">A#</button>
+                    <button type="button" class="note-btn" onclick="addNote('B')">B</button>
+                </div>
+            </div>
+
+            <div class="advanced-options">
+                <div class="form-group">
+                    <label for="firstFret">Starting Fret:</label>
+                    <select id="firstFret">
+                        <option value="0">Open (0)</option>
+                        <option value="1" selected>1st Fret</option>
+                        <option value="3">3rd Fret</option>
+                        <option value="5">5th Fret</option>
+                        <option value="7">7th Fret</option>
+                        <option value="9">9th Fret</option>
+                        <option value="12">12th Fret</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fretRange">Fret Range:</label>
+                    <select id="fretRange">
+                        <option value="3">3 Frets</option>
+                        <option value="4" selected>4 Frets</option>
+                        <option value="5">5 Frets</option>
+                        <option value="6">6 Frets</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rootNote">Root Note (optional):</label>
+                    <select id="rootNote">
+                        <option value="">Auto (first note)</option>
+                        <option value="C">C</option>
+                        <option value="C#">C# / Db</option>
+                        <option value="D">D</option>
+                        <option value="D#">D# / Eb</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                        <option value="F#">F# / Gb</option>
+                        <option value="G">G</option>
+                        <option value="G#">G# / Ab</option>
+                        <option value="A">A</option>
+                        <option value="A#">A# / Bb</option>
+                        <option value="B">B</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="generateChord()">🎵 Generate Chord Fingerings</button>
+                <button class="clear-btn" onclick="clearAll()">🗑️ Clear All</button>
+            </div>
+
+            <div class="help-text">
+                💡 <strong>Tips:</strong> Enter notes separated by spaces. Use # for sharps (C# D# F#) or b for flats (Db Eb Gb). 
+                Click the note buttons above to build your chord easily!
+            </div>
+        </div>
+
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        // Constants
+        const MAX_NOTES = 65;
+        const MAX_PATTERNS = 100;
+        const MAX_STRINGS = 6;
+        const MAX_FRETS = 26;
+
+        // Note constants
+        const _C = 0, _Db = 1, _D = 2, _Eb = 3, _E = 4, _F = 5;
+        const _Gb = 6, _G = 7, _Ab = 8, _A = 9, _Bb = 10, _B = 11;
+        const N_NOTES_IN_SCALE = 12;
+
+        // Display constants
+        const NSH = 5, DNH = 3, NSV = 0, DNV = 2;
+        const BAR = '|', Y = '+', X = '-', Z = ' ', CRS = '+';
+
+        // String indices
+        const LOW_E = 0, A_STRING = 1, D_STRING = 2;
+        const G_STRING = 3, B_STRING = 4, HIGH_E = 5;
+
+        // Default tuning (EADGBE)
+        const DEFAULT_TUNING = [_E, _A, _D, _G, _B, _E];
+
+        // Global variables
+        let fretNotes = Array.from({ length: MAX_FRETS }, () => Array(MAX_STRINGS).fill(0));
+
+        // Fretboard template
+        const strFret = [
+            [Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z, Z],
+            [Z, Z, Z, Z, X, Y, X, X, Y, X, X, Y, X, X, Y, X, X, Y, X, X, Y, X],
+            [Z, '1', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '2', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '3', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '4', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '5', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '6', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '7', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '8', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            [Z, '9', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            ['1', '0', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            ['1', '1', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z],
+            [Z, Z, Z, Z, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X, X, CRS, X],
+            ['1', '2', Z, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z, Z, BAR, Z]
+        ];
+
+        class FingerPatterns {
+            constructor() {
+                this.f = Array.from({ length: MAX_PATTERNS }, () => Array(MAX_STRINGS).fill(0));
+                this.n = 0;
+            }
+        }
+
+        class StringList {
+            constructor() {
+                this.f = Array(MAX_FRETS).fill(0);
+                this.n = 0;
+            }
+        }
+
+        function incNote(x, y) {
+            const result = (x + y) % N_NOTES_IN_SCALE;
+            return result >= 0 ? result : result + N_NOTES_IN_SCALE;
+        }
+
+        function letterOf(noteNum) {
+            const letters = ['C', 'D', 'D', 'E', 'E', 'F', 'G', 'G', 'A', 'A', 'B', 'B'];
+            return letters[noteNum] || '?';
+        }
+
+        function sharpRFlat(noteNum) {
+            return [_Db, _Eb, _Gb, _Ab, _Bb].includes(noteNum) ? 'b' : ' ';
+        }
+
+        function getNoteNum(chStart, accidental = '') {
+            const noteMap = { 'A': _A, 'B': _B, 'C': _C, 'D': _D, 'E': _E, 'F': _F, 'G': _G };
+            let noteNum = noteMap[chStart.toUpperCase()] || _C;
+            
+            if (accidental === '#') noteNum += 1;
+            else if (accidental === 'b') noteNum -= 1;
+            
+            return ((noteNum % N_NOTES_IN_SCALE) + N_NOTES_IN_SCALE) % N_NOTES_IN_SCALE;
+        }
+
+        function parseChordInput(input) {
+            const chord = [];
+            const parts = input.trim().toUpperCase().split(/\s+/);
+            
+            for (const part of parts) {
+                if (part.length === 0) continue;
+                
+                const note = part[0];
+                const accidental = part.slice(1);
+                
+                if ('ABCDEFG'.includes(note)) {
+                    let acc = '';
+                    if (accidental.includes('#')) acc = '#';
+                    else if (accidental.includes('B')) acc = 'b';
+                    
+                    chord.push(getNoteNum(note, acc));
+                }
+            }
+            
+            // Remove duplicates
+            const uniqueChord = [...new Set(chord)];
+            return [uniqueChord, uniqueChord.length];
+        }
+
+        function inChord(note, chord, n) {
+            return chord.slice(0, n).includes(note);
+        }
+
+        function isChord(ch1, n1, ch2, n2) {
+            const sawNote = Array(n2).fill(false);
+            
+            for (let i = 0; i < n2; i++) {
+                for (let j = 0; j < n1; j++) {
+                    if (ch2[i] === ch1[j]) {
+                        sawNote[i] = true;
+                        break;
+                    }
+                }
+            }
+            
+            return sawNote.every(x => x);
+        }
+
+        function initFb(fret) {
+            for (let i = 0; i < strFret.length && i < fret.length; i++) {
+                for (let j = 0; j < strFret[0].length && j < fret[i].length; j++) {
+                    fret[i][j] = strFret[i][j];
+                }
+            }
+        }
+
+        function markFb(string, fret) {
+            for (let i = 0; i < MAX_STRINGS; i++) {
+                const strx = NSH + (i * DNH);
+                let stry, nc, nca;
+                
+                if (string[i] === -1) {
+                    stry = 0;
+                    nc = 'X';
+                    nca = ' ';
+                } else if (string[i] === 0) {
+                    stry = 0;
+                    const note = fretNotes[0][i];
+                    nc = letterOf(note);
+                    nca = sharpRFlat(note);
+                } else {
+                    stry = NSV + (string[i] * DNV);
+                    const note = fretNotes[string[i]][i];
+                    nc = letterOf(note);
+                    nca = sharpRFlat(note);
+                }
+                
+                if (fret[stry] && strx < fret[stry].length) {
+                    fret[stry][strx] = nc;
+                    if (strx + 1 < fret[stry].length) {
+                        fret[stry][strx + 1] = nca;
+                    }
+                }
+            }
+        }
+
+        function showFb(start, stop, fret) {
+            let output = '';
+            const b = NSV + (DNV * start);
+            const e = NSV + (DNV * (stop + 1));
+            
+            if (start !== 0) {
+                for (let j = 0; j < 2 && j < fret.length; j++) {
+                    output += fret[j].join('') + '\n';
+                }
+            }
+            
+            for (let j = b; j < e && j < fret.length; j++) {
+                output += fret[j].join('') + '\n';
+            }
+            
+            return output;
+        }
+
+        function buildPat(possible, chPatterns, chord, chLen, root) {
+            const prefOrder = Array.from({ length: 4 }, () => Array(3).fill(0));
+            
+            // Create preference order with root notes first
+            for (const s of [LOW_E, A_STRING, D_STRING]) {
+                let t = 0;
+                let b = possible[s].n - 1;
+                
+                for (let f = 0; f < possible[s].n; f++) {
+                    const j = possible[s].f[f];
+                    if (j >= 0 && fretNotes[j] && fretNotes[j][s] === root) {
+                        prefOrder[s][t] = j;
+                        t++;
+                    } else {
+                        prefOrder[s][b] = j;
+                        b--;
+                    }
+                }
+            }
+            
+            let n = 0;
+            const maxN = MAX_PATTERNS;
+            
+            for (let le = 0; le < possible[LOW_E].n && n < maxN; le++) {
+                for (let as = 0; as < possible[A_STRING].n && n < maxN; as++) {
+                    for (let ds = 0; ds < possible[D_STRING].n && n < maxN; ds++) {
+                        for (let gs = 0; gs < possible[G_STRING].n && n < maxN; gs++) {
+                            for (let bs = 0; bs < possible[B_STRING].n && n < maxN; bs++) {
+                                for (let he = 0; he < possible[HIGH_E].n && n < maxN; he++) {
+                                    chPatterns.f[n][LOW_E] = prefOrder[LOW_E][le];
+                                    chPatterns.f[n][A_STRING] = prefOrder[A_STRING][as];
+                                    chPatterns.f[n][D_STRING] = prefOrder[D_STRING][ds];
+                                    chPatterns.f[n][G_STRING] = possible[G_STRING].f[gs];
+                                    chPatterns.f[n][B_STRING] = possible[B_STRING].f[bs];
+                                    chPatterns.f[n][HIGH_E] = possible[HIGH_E].f[he];
+                                    
+                                    const thisChord = Array.from({ length: MAX_STRINGS }, (_, j) => {
+                                        const fret = chPatterns.f[n][j];
+                                        return fret >= 0 && fretNotes[fret] ? fretNotes[fret][j] : -1;
+                                    });
+                                    
+                                    if (isChord(thisChord, MAX_STRINGS, chord, chLen)) {
+                                        n++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            chPatterns.n = n;
+        }
+
+        function tune() {
+            for (let i = 1; i < MAX_FRETS; i++) {
+                for (let j = 0; j < MAX_STRINGS; j++) {
+                    fretNotes[i][j] = incNote(fretNotes[i - 1][j], 1);
+                }
+            }
+        }
+
+        function generateChordFingerings(chord, chordLen, firstFret, fretRange, root) {
+            const lastFret = Math.min(firstFret + fretRange - 1, MAX_FRETS - 1);
+            
+            if (firstFret > MAX_FRETS - 1) {
+                return `Error: first fret ${firstFret} is bigger than max frets (${MAX_FRETS})!`;
+            }
+            
+            const possible = Array.from({ length: MAX_STRINGS }, () => new StringList());
+            
+            // Check open strings if not starting at top
+            if (firstFret !== 0) {
+                for (let s = 0; s < MAX_STRINGS; s++) {
+                    if (inChord(fretNotes[0][s], chord, chordLen)) {
+                        possible[s].f[0] = 0;
+                        possible[s].n++;
+                    }
+                }
+            }
+            
+            // Check fretted notes in range
+            for (let s = 0; s < MAX_STRINGS; s++) {
+                for (let f = firstFret; f <= lastFret; f++) {
+                    if (fretNotes[f] && inChord(fretNotes[f][s], chord, chordLen)) {
+                        const n = possible[s].n;
+                        possible[s].f[n] = f;
+                        possible[s].n++;
+                    }
+                }
+            }
+            
+            // Mark unused strings
+            for (let s = 0; s < MAX_STRINGS; s++) {
+                if (possible[s].n === 0) {
+                    possible[s].f[0] = -1;
+                    possible[s].n = 1;
+                }
+            }
+            
+            const chPatterns = new FingerPatterns();
+            buildPat(possible, chPatterns, chord, chordLen, root);
+            
+            let output = '';
+            const fb = Array.from({ length: strFret.length }, () => Array(strFret[0].length).fill(Z));
+            
+            if (chPatterns.n === 0) {
+                output += 'No valid chord fingerings found in the specified range.\n';
+                output += 'Try expanding the fret range or changing the starting fret.\n';
+                return output;
+            }
+            
+            for (let j = 0; j < chPatterns.n; j++) {
+                initFb(fb);
+                markFb(chPatterns.f[j], fb);
+                
+                output += `\nChord fingering #${j + 1} of ${chPatterns.n}\n\n`;
+                output += showFb(firstFret, lastFret, fb);
+                output += '\n';
+            }
+            
+            return output;
+        }
+
+        function initializeApp() {
+            // Initialize fretboard with default tuning
+            for (let i = 0; i < MAX_STRINGS; i++) {
+                fretNotes[0][i] = DEFAULT_TUNING[i];
+            }
+            tune();
+            
+            // Add enter key support
+            document.getElementById('chordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    generateChord();
+                }
+            });
+        }
+
+        function addNote(note) {
+            const input = document.getElementById('chordInput');
+            const currentValue = input.value.trim();
+            
+            if (currentValue) {
+                input.value = currentValue + ' ' + note;
+            } else {
+                input.value = note;
+            }
+            
+            input.focus();
+        }
+
+        function generateChord() {
+            const chordInput = document.getElementById('chordInput').value;
+            const firstFret = parseInt(document.getElementById('firstFret').value);
+            const fretRange = parseInt(document.getElementById('fretRange').value);
+            const rootNoteValue = document.getElementById('rootNote').value;
+            const output = document.getElementById('output');
+            
+            if (!chordInput.trim()) {
+                output.textContent = 'Please enter chord notes first!';
+                output.style.display = 'block';
+                return;
+            }
+            
+            const [chord, chordLen] = parseChordInput(chordInput);
+            
+            if (chordLen === 0) {
+                output.textContent = 'No valid notes found. Please check your input.';
+                output.style.display = 'block';
+                return;
+            }
+            
+            let rootNote = chord[0]; // Default to first note
+            if (rootNoteValue) {
+                const parsedRoot = parseChordInput(rootNoteValue);
+                if (parsedRoot[1] > 0) {
+                    rootNote = parsedRoot[0][0];
+                }
+            }
+            
+            const result = generateChordFingerings(chord, chordLen, firstFret, fretRange, rootNote);
+            output.textContent = result;
+            output.style.display = 'block';
+        }
+
+        function clearAll() {
+            document.getElementById('chordInput').value = '';
+            document.getElementById('output').textContent = '';
+            document.getElementById('output').style.display = 'none';
+            document.getElementById('firstFret').value = '1';
+            document.getElementById('fretRange').value = '4';
+            document.getElementById('rootNote').value = '';
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
