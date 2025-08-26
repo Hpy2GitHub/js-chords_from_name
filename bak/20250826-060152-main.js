@@ -234,7 +234,7 @@ class GuitarSVGRenderer {
         const circlePadding = cfg.circleRadius;
         const baseHeight = cfg.margin * 2 + (fretCount * cfg.fretSpacing);
         const titleHeight = 30;
-        const debugHeight = 50; // Always show debug info
+        const debugHeight = document.getElementById('debugToggle')?.checked ? 50 : 0;
         const totalHeight = topPadding + circlePadding + baseHeight + titleHeight + debugHeight;
         
         svg.setAttribute("width", cfg.width);
@@ -245,7 +245,7 @@ class GuitarSVGRenderer {
         this.drawMarks(svg, cfg, marks, title, diagramType, topPadding + circlePadding);
         this.drawTitle(svg, cfg, chordIndex, templateId, diagramType, placementFret, fretCount, topPadding + circlePadding);
         
-        if (true) { // Always show debug info
+        if (document.getElementById('debugToggle')?.checked) {
             this.drawDebugInfo(svg, cfg, marks, placementFret, fretCount, topPadding + circlePadding);
         }
         
@@ -398,16 +398,6 @@ const svgRenderer = new GuitarSVGRenderer();
 
 // --- Part 5: High-Level Functions ---
 
-const SEMITONES_TO_INTERVAL = {
-    0: 'R', 1: 'b2', 2: '2', 3: 'b3', 4: '3', 5: '4',
-    6: '#4', 7: '5', 8: 'b6', 9: '6', 10: 'b7', 11: '7'
-};
-
-function getInterval(rootNoteNum, noteNum) {
-    const diff = (12 + noteNum - rootNoteNum) % 12;
-    return SEMITONES_TO_INTERVAL[diff];
-}
-
 /**
  * Generates chord diagrams from a list of notes and renders them to the specified DOM element.
  * This is for the "Notes" tab.
@@ -436,46 +426,29 @@ function generateChordsFromNotes(notesString, firstFret, fretRange, rootNote, ou
     const diagramsContainer = document.createElement('div');
     diagramsContainer.className = 'chord-diagrams';
 
-    const rootNoteNum = noteToNumber(chordNotes[0]);
+    fingerings.slice(0, 10).forEach((fingering, index) => {
+        // Adapt the fingering data to what GuitarSVGRenderer expects
+        const marks = fingering.frets.map(pos => [pos.string, pos.fret, pos.note]);
+        const title = fingering.notes;
+        const placementFret = fingering.startFret;
+        const formLength = 4; // Represents the span of the diagram (e.g., 4 frets)
 
-    fingerings.slice(0, 5).forEach((fingering, index) => { // Limit to 5 fingerings to avoid clutter
-        const row = document.createElement('div');
-        row.className = 'chord-row';
+        const diagramDiv = document.createElement('div');
+        diagramDiv.className = 'chord-diagram';
 
-        const diagrams = [
-            {
-                type: 'Notes',
-                marks: fingering.frets.map(pos => [pos.string, pos.fret, pos.note])
-            },
-            {
-                type: 'Intervals',
-                marks: fingering.frets.map(pos => {
-                    const noteNum = noteToNumber(pos.note);
-                    const interval = getInterval(rootNoteNum, noteNum);
-                    return [pos.string, pos.fret, interval];
-                })
-            }
-        ];
-
-        diagrams.forEach(diagram => {
-            const diagramDiv = document.createElement('div');
-            diagramDiv.className = 'chord-diagram';
-
-            const svg = svgRenderer.createChordSVG(
-                diagram.marks,
-                fingering.notes, // title
-                fingering.startFret, // placementFret
-                4, // formLength
-                `Fingering ${index + 1}`, // templateId
-                diagram.type, // diagramType
-                index, // chordIndex
-                null // labelingInfo
-            );
-            
-            diagramDiv.appendChild(svg);
-            row.appendChild(diagramDiv);
-        });
-        diagramsContainer.appendChild(row);
+        const svg = svgRenderer.createChordSVG(
+            marks,
+            title,
+            placementFret,
+            formLength,
+            `Fingering ${index + 1}`, // templateId
+            'Notes', // diagramType
+            index, // chordIndex
+            null // labelingInfo (can be improved later)
+        );
+        
+        diagramDiv.appendChild(svg);
+        diagramsContainer.appendChild(diagramDiv);
     });
 
     outputDiv.appendChild(diagramsContainer);
