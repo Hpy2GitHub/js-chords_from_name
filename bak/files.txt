@@ -1,9 +1,0 @@
-form2.css - used by index23.html
-form4.css - used by index23.html
-index14.js - used by index15.html
-index15.css 
-index15.html - needs tlc but used to make chords I think 
-index23.html - nicer html/css - but needs hookup to real js
-notes_form.js
-tabs.js
-tabs_only.html
