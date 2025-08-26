@@ -1,0 +1,16 @@
+@media (max-width: 768px) {
+  .chord-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chord-diagram {
+    width: 100%;
+    max-width: 350px; /* Keep max-width to avoid huge diagrams on slightly larger screens */
+  }
+
+  .chord-diagram svg {
+    width: 100%;
+    height: auto;
+  }
+}

@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tabs Demo</title>
-  <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/chord_name.css" />
-  <link rel="stylesheet" href="css/chord_notes.css" />
-  <link rel="stylesheet" href="css/output.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="index17.css" />
+  <link rel="stylesheet" href="form2.css" />
+  <link rel="stylesheet" href="form4.css" />
+  <link rel="stylesheet" href="output.css" />
 
 </head>
 <body>
@@ -100,6 +99,7 @@
     <button type="submit" class="btn primary">Show</button>
     <button type="reset" class="btn">Clear</button>
   </div>
+  <input type="hidden" id="debugToggle" value="1">
 </form>
 
       <!-- Chord Type Form  End-->
@@ -134,7 +134,7 @@
       <button type="button" class="note-btn" data-note="Gb">Gb</button>
       <button type="button" class="note-btn" data-note="G">G</button>
       <button type="button" class="note-btn" data-note="Ab">Ab</button>
-      <button type="button" class="note-btn" data-note="A">A</option>
+      <button type="button" class="note-btn" data-note="A">A</button>
       <button type="button" class="note-btn" data-note="Bb">Bb</button>
       <button type="button" class="note-btn" data-note="B">B</button>
     </div>
@@ -189,8 +189,8 @@
     <div id="notes-output" class="output"></div>
   </section> 
 
-  <script src="js/tabs.js"></script>
-  <script src="js/form.js"></script>
+  <script src="tabs.js"></script>
+  <script src="notes_form.js"></script>
   <script src="js/main.js"></script>
 
   <!-- Glue code to connect UI to the main.js library -->
@@ -198,24 +198,26 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Handler for the "Chord Name" form
         const chordForm = document.querySelector('.inline-chord-form');
-        chordForm.addEventListener('submit', (e) => {
+        chordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const root = document.getElementById('chord-rootNote').value;
             const type = document.getElementById('chord-chordType').value;
             const startFret = parseInt(document.getElementById('chord-startFret').value) || 0;
             const chordSpan = parseInt(document.getElementById('chord-chordSpan').value) || 4;
-            const fretRange = chordSpan;
+            const endFret = startFret + chordSpan;
             const outputId = 'chord-output';
 
-            // 1. Get the notes for the chord name
-            const notes = getNotesForChord(root, type);
-            if (notes.length === 0) {
-                document.getElementById(outputId).innerHTML = `<p class="error">Could not determine notes for ${root} ${type}.</p>`;
-                return;
-            }
+            const outputDiv = document.getElementById(outputId);
+            outputDiv.innerHTML = '<p>Loading...</p>';
 
-            // 2. Pass the notes to the fingering generator
-            generateChordsFromNotes(notes.join(' '), startFret, fretRange, notes[0], outputId);
+            try {
+                const result = await fetchChordData(root, type, startFret, endFret);
+                if (result && result.data) {
+                    displayChords(result.data, outputId);
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<p class="error">Failed to load chord data: ${error.message}</p>`;
+            }
         });
 
         // Handler for the "Notes" form
@@ -242,3 +244,4 @@
   ></script>
 </body>
 </html>
+
