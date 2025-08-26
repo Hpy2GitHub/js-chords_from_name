@@ -13,6 +13,10 @@
   flex-wrap: wrap;
 }
 
+.chord-diagrams {
+  width: 100%;
+}
+
 /* New style for rows of chord diagrams */
 .chord-row {
     display: flex;
@@ -29,6 +33,11 @@
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
+}
+
+.chord-diagram {
+    display: flex;
+    justify-content: center;
 }
 
 @media (max-width: 768px) {
@@ -53,7 +62,7 @@
   }
 
   .chord-diagram svg {
-    width: 100% !important;
-    height: auto !important;
+    width: 100%;
+    height: auto;
   }
 }
