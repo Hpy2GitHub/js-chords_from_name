@@ -1,4 +1,3 @@
-
 /* Updated to match the visual style of the input forms */
 #output {
   background: var(--field, #ffffff);
@@ -30,4 +29,31 @@
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .chord-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; /* Add some space between the diagrams */
+  }
+
+  .chord-diagram {
+    width: 100%;
+    max-width: 350px;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+  }
+
+  .chord-row .chord-diagram:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .chord-diagram svg {
+    width: 100% !important;
+    height: auto !important;
+  }
 }
