@@ -454,6 +454,10 @@ function generateChordsFromNotes(notesString, firstFret, fretRange, rootNote, ou
                     const interval = getInterval(rootNoteNum, noteNum);
                     return [pos.string, pos.fret, interval];
                 })
+            },
+            {
+                type: 'Frets',
+                marks: fingering.frets.map(pos => [pos.string, pos.fret, pos.fret.toString()])
             }
         ];
 
@@ -482,70 +486,25 @@ function generateChordsFromNotes(notesString, firstFret, fretRange, rootNote, ou
 }
 
 /**
- * Fetches chord data from the backend API.
- * This is for the "Chord Name" tab.
+ * Builds an array of notes for a given chord name and type.
+ * This is the new client-side logic for the "Chord Name" tab.
  */
-async function fetchChordData(root, chordType, startFret, endFret) {
-    const apiUrl = `http://localhost/cgi-bin/cd/chordgui/chordgui.py?root=${encodeURIComponent(root)}&type=${encodeURIComponent(chordType)}&start_fret=${startFret}&end_fret=${endFret}`;
-    try {
-        const response = await fetch(apiUrl, { headers: { 'Accept': 'application/json' } });
-        if (!response.ok) throw new Error(`API request failed: ${response.status}`);
-        const data = await response.json();
-        if (!data.chords) throw new Error('Invalid response: missing chords array');
-        return { data, apiUrl };
-    } catch (error) {
-        console.error('Error fetching chord data:', error);
-        // Avoid direct DOM manipulation from library code
-        throw error;
-    }
-}
+const CHORD_FORMULAS = {
+    'maj': [0, 4, 7], // Major
+    'min': [0, 3, 7], // Minor
+    'dim': [0, 3, 6], // Diminished
+    'aug': [0, 4, 8], // Augmented
+    'dom7': [0, 4, 7, 10], // Dominant 7th
+    'maj7': [0, 4, 7, 11], // Major 7th
+    'min7': [0, 3, 7, 10], // Minor 7th
+};
 
-/**
- * Displays chord data fetched from the backend.
- */
-function displayChords(data, outputElementId) {
-    const chordDisplay = document.getElementById(outputElementId);
-     if (!chordDisplay) {
-        console.error(`Output element #${outputElementId} not found.`);
-        return;
+function getNotesForChord(rootNote, chordType) {
+    const rootNum = noteToNumber(rootNote);
+    const formula = CHORD_FORMULAS[chordType];
+    if (!formula) {
+        console.error(`Unknown chord type: ${chordType}`);
+        return [];
     }
-    chordDisplay.innerHTML = '';
-
-    if (!data.chords) {
-        chordDisplay.innerHTML = '<p class="error">No chords returned</p>';
-        return;
-    }
-
-    data.chords.forEach((chord, index) => {
-        const labelingInfo = fretLabeler.labelChordFrets({ chords: [chord] });
-        const templateId = chord.template?.id || `Unknown-${index + 1}`;
-        
-        const row = document.createElement('div');
-        row.className = 'chord-row';
-        
-        [
-            { marks: chord.finger_marks, type: 'Fingerings' },
-            { marks: chord.notes_marks, type: 'Notes' },
-            { marks: chord.intervals_marks, type: 'Intervals' }
-        ].forEach(diagram => {
-            const div = document.createElement('div');
-            div.className = 'chord-diagram';
-            
-            const svg = svgRenderer.createChordSVG(
-                diagram.marks,
-                `${diagram.type} for ${templateId}`,
-                chord.placement_fret,
-                chord.template.form_length,
-                templateId,
-                diagram.type,
-                index,
-                labelingInfo
-            );
-            
-            div.appendChild(svg);
-            row.appendChild(div);
-        });
-        
-        chordDisplay.appendChild(row);
-    });
+    return formula.map(interval => numberToNote(rootNum + interval));
 }

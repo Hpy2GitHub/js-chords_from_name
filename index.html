@@ -133,7 +133,7 @@
       <button type="button" class="note-btn" data-note="Gb">Gb</button>
       <button type="button" class="note-btn" data-note="G">G</button>
       <button type="button" class="note-btn" data-note="Ab">Ab</button>
-      <button type="button" class="note-btn" data-note="A">A</button>
+      <button type="button" class="note-btn" data-note="A">A</option>
       <button type="button" class="note-btn" data-note="Bb">Bb</button>
       <button type="button" class="note-btn" data-note="B">B</button>
     </div>
@@ -197,26 +197,24 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Handler for the "Chord Name" form
         const chordForm = document.querySelector('.inline-chord-form');
-        chordForm.addEventListener('submit', async (e) => {
+        chordForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const root = document.getElementById('chord-rootNote').value;
             const type = document.getElementById('chord-chordType').value;
             const startFret = parseInt(document.getElementById('chord-startFret').value) || 0;
             const chordSpan = parseInt(document.getElementById('chord-chordSpan').value) || 4;
-            const endFret = startFret + chordSpan;
+            const fretRange = chordSpan;
             const outputId = 'chord-output';
 
-            const outputDiv = document.getElementById(outputId);
-            outputDiv.innerHTML = '<p>Loading...</p>';
-
-            try {
-                const result = await fetchChordData(root, type, startFret, endFret);
-                if (result && result.data) {
-                    displayChords(result.data, outputId);
-                }
-            } catch (error) {
-                outputDiv.innerHTML = `<p class="error">Failed to load chord data: ${error.message}</p>`;
+            // 1. Get the notes for the chord name
+            const notes = getNotesForChord(root, type);
+            if (notes.length === 0) {
+                document.getElementById(outputId).innerHTML = `<p class="error">Could not determine notes for ${root} ${type}.</p>`;
+                return;
             }
+
+            // 2. Pass the notes to the fingering generator
+            generateChordsFromNotes(notes.join(' '), startFret, fretRange, notes[0], outputId);
         });
 
         // Handler for the "Notes" form
@@ -243,4 +241,3 @@
   ></script>
 </body>
 </html>
-
